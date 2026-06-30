@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Radar Pulse Clustering</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-brand">Radar Pulse Clustering</div>
+    <div class="nav-links">
+      <a href="/" class="active">대시보드</a>
+      <a href="/design">설계</a>
+      <a href="/train">학습</a>
+    </div>
+  </nav>
+
+  <main class="container">
+    <header class="page-header">
+      <h1>학습 Job 대시보드</h1>
+      <p>멀티모달 Transformer · IQ 3-Branch · Option B Fusion · HDBSCAN</p>
+    </header>
+
+    <div class="card card-highlight">
+      <p>설계서 v2 반영: IQ 순시특징+STFT 3-branch, TOA temporal embedding, 변조유형 보조손실, DATA 폴더 자동 저장</p>
+      <a href="/design" class="btn btn-secondary">아키텍처 상세 보기</a>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h2>학습 이력</h2>
+        <a href="/train" class="btn btn-primary">+ 새 학습 시작</a>
+      </div>
+      <div id="jobs-loading" class="loading">불러오는 중...</div>
+      <table id="jobs-table" class="data-table" hidden>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>이름</th>
+            <th>모달리티</th>
+            <th>Fusion</th>
+            <th>상태</th>
+            <th>진행</th>
+            <th>ARI</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="jobs-body"></tbody>
+      </table>
+      <p id="jobs-empty" class="empty" hidden>아직 학습 이력이 없습니다.</p>
+    </div>
+
+    <div class="card">
+      <h2>시뮬레이션 시나리오 (DB)</h2>
+      <div id="scenarios-grid" class="scenario-grid"></div>
+    </div>
+  </main>
+
+  <script src="/static/js/dashboard.js"></script>
+</body>
+</html>

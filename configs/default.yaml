@@ -1,0 +1,40 @@
+model:
+  embed_dim: 256
+  num_heads: 8
+  num_layers: 4
+  ff_dim: 512
+  dropout: 0.1
+  fusion_mode: pulse          # pulse (Option B) | token (Option A)
+  modality_set: full
+  pdw_dim: 5
+  iq_length: 256
+  spec_height: 64
+  spec_width: 64
+  num_modulation_classes: 5
+
+training:
+  optimizer: adamw
+  lr: 1.0e-4
+  weight_decay: 1.0e-4
+  batch_size: 8
+  epochs: 30
+  contrastive_temperature: 0.1
+  aux_lambda: 0.2
+  scheduler: cosine
+
+data:
+  train_samples: 80
+  test_samples: 30
+  num_emitters: 3
+  pulses_per_emitter: 30
+  window_size: 256
+  train_seed: 42
+  test_seed: 999
+
+clustering:
+  method: hdbscan
+  min_cluster_size: 5
+
+paths:
+  data_root: DATA
+  checkpoint_root: checkpoints

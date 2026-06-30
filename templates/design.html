@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>모델 설계 - Radar Pulse Clustering</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-brand">Radar Pulse Clustering</div>
+    <div class="nav-links">
+      <a href="/">대시보드</a>
+      <a href="/design" class="active">설계</a>
+      <a href="/train">학습</a>
+    </div>
+  </nav>
+
+  <main class="container">
+    <header class="page-header">
+      <h1>멀티모달 Transformer 설계</h1>
+      <p>PDW · IQ · 스펙트럼 기반 레이다 펄스 클러스터링 (설계서 v2)</p>
+    </header>
+
+    <div class="card">
+      <h2>아키텍처 개요</h2>
+      <pre class="arch-diagram">PDW (CF,PW,PA,DOA,TOA) ──▶ PDW Encoder (MLP) ──────────────┐
+IQ raw + IF/φ/A + STFT ──▶ IQ 3-Branch Encoder ─────────────┼──▶ Fusion (Option B/A)
+Spectrum ─────────────────▶ Spectrum Encoder (2D-CNN) ────────┘
+                              + TOA Temporal Embedding
+                              ▼
+                    Transformer Encoder (Self-Attention)
+                              ▼
+                    Embedding Projection (L2 norm)
+                              ▼
+              학습: Contrastive + 변조유형 Aux Loss  |  추론: HDBSCAN</pre>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h2>IQ Encoder (3-Branch)</h2>
+        <ul class="feature-list">
+          <li><strong>Raw IQ</strong> — 1D-CNN: 펄스 파형·천이 특성</li>
+          <li><strong>순시 특징</strong> — φ(t), IF(t), A(t): LFM/FSK/PSK 구분</li>
+          <li><strong>STFT</strong> — 2D-CNN: chirp·도약 패턴</li>
+          <li><strong>Aux Head</strong> — CW/LFM/NLFM/FSK/PSK 보조 분류</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2>Fusion 옵션</h2>
+        <ul class="feature-list">
+          <li><strong>Option B (pulse)</strong> — 펄스별 모달리티 concat → N 토큰 (기본)</li>
+          <li><strong>Option A (token)</strong> — 3N 토큰 self-attention (ablation)</li>
+          <li><strong>TOA Embedding</strong> — 연속값 temporal positional encoding</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>변조·PRI 시뮬레이션</h2>
+      <div class="scenario-grid">
+        <div class="scenario-item"><strong>변조</strong><span>CW, LFM, NLFM, FSK, PSK</span></div>
+        <div class="scenario-item"><strong>PRI</strong><span>Stable, Jitter, Stagger, Sliding, Group</span></div>
+        <div class="scenario-item"><strong>강건성</strong><span>펄스 누락 0~30%, 잡음 0~20%, SNR 5~15dB</span></div>
+        <div class="scenario-item"><strong>DATA 저장</strong><span>PDW, IQ, iq_inst, iq_tf, spectrum, mod_labels</span></div>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

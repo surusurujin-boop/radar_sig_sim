@@ -1,0 +1,223 @@
+{
+  "split": "test",
+  "num_samples": 10,
+  "pdw_columns": [
+    "cf_norm",
+    "pw_log",
+    "pa",
+    "doa_norm",
+    "toa_norm"
+  ],
+  "pdw_columns_desc": {
+    "cf_norm": "Carrier Frequency (normalized)",
+    "pw_log": "Pulse Width log10(us)",
+    "pa": "Pulse Amplitude",
+    "doa_norm": "Direction of Arrival (normalized)",
+    "toa_norm": "Time of Arrival (normalized, order preserved)"
+  },
+  "samples": [
+    {
+      "file": "sample_0000.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0001.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0002.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0003.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0004.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0005.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0006.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0007.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0008.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0009.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    }
+  ],
+  "scenario": {
+    "scenario_id": "test",
+    "name": "Test",
+    "description": "",
+    "num_emitters": 3,
+    "pulses_per_emitter": 30,
+    "pri_modulation": "stable",
+    "drop_rate": 0.0,
+    "snr_db": 15.0,
+    "noise_pulse_rate": 0.0,
+    "num_samples": 10,
+    "seed": 999
+  }
+}

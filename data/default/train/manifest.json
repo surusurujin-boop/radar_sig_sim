@@ -1,0 +1,1553 @@
+{
+  "split": "train",
+  "num_samples": 80,
+  "pdw_columns": [
+    "cf_norm",
+    "pw_log",
+    "pa",
+    "doa_norm",
+    "toa_norm"
+  ],
+  "pdw_columns_desc": {
+    "cf_norm": "Carrier Frequency (normalized)",
+    "pw_log": "Pulse Width log10(us)",
+    "pa": "Pulse Amplitude",
+    "doa_norm": "Direction of Arrival (normalized)",
+    "toa_norm": "Time of Arrival (normalized, order preserved)"
+  },
+  "samples": [
+    {
+      "file": "sample_0000.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0001.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0002.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0003.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0004.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0005.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0006.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0007.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0008.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0009.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0010.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0011.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0012.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0013.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0014.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0015.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0016.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0017.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0018.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0019.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0020.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0021.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0022.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0023.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0024.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0025.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0026.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0027.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0028.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0029.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0030.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0031.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0032.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0033.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0034.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0035.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0036.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0037.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0038.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0039.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0040.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0041.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0042.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0043.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0044.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0045.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0046.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0047.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0048.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0049.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0050.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0051.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0052.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0053.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0054.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0055.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0056.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0057.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0058.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0059.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0060.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0061.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0062.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0063.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0064.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0065.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0066.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0067.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0068.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0069.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0070.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0071.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0072.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0073.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0074.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0075.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0076.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0077.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0078.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    },
+    {
+      "file": "sample_0079.npz",
+      "num_pulses": 90,
+      "pdw_shape": [
+        90,
+        5
+      ],
+      "iq_shape": [
+        90,
+        2,
+        256
+      ],
+      "spectrum_shape": [
+        90,
+        1,
+        64,
+        64
+      ]
+    }
+  ],
+  "scenario": {
+    "scenario_id": "S0",
+    "name": "Baseline",
+    "description": "안정 PRI, SNR 15 dB, 펄스 누락·잡음 없음",
+    "num_emitters": 3,
+    "pulses_per_emitter": 30,
+    "pri_modulation": "stable",
+    "drop_rate": 0.0,
+    "snr_db": 15.0,
+    "noise_pulse_rate": 0.0,
+    "num_samples": 80,
+    "seed": 42
+  }
+}

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>모델 학습 - Radar Pulse Clustering</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-brand">Radar Pulse Clustering</div>
+    <div class="nav-links">
+      <a href="/">대시보드</a>
+      <a href="/design">설계</a>
+      <a href="/train" class="active">학습</a>
+    </div>
+  </nav>
+
+  <main class="container">
+    <header class="page-header">
+      <h1>모델 학습</h1>
+      <p>설계서 v2 — IQ 3-Branch, Option B Fusion, Contrastive + Aux Loss</p>
+    </header>
+
+    <div class="grid-2">
+      <div class="card">
+        <h2>학습 설정</h2>
+        <form id="train-form">
+          <div class="form-group">
+            <label for="name">Job 이름</label>
+            <input type="text" id="name" name="name" value="실험 Run" required>
+          </div>
+
+          <div class="form-group">
+            <label for="modality_set">모달리티</label>
+            <select id="modality_set" name="modality_set">
+              <option value="full">PDW + IQ + Spectrum (전체)</option>
+              <option value="pdw_iq">PDW + IQ</option>
+              <option value="pdw">PDW only</option>
+              <option value="ablation">Ablation (3종 비교)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="fusion_mode">Fusion 모드</label>
+            <select id="fusion_mode" name="fusion_mode">
+              <option value="pulse">Option B — Pulse-level (기본)</option>
+              <option value="token">Option A — Token-level (3N)</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="epochs">Epochs</label>
+              <input type="number" id="epochs" name="epochs" value="10" min="1" max="100">
+            </div>
+            <div class="form-group">
+              <label for="embed_dim">Embed Dim</label>
+              <input type="number" id="embed_dim" name="embed_dim" value="256" min="64" max="512">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="aux_lambda">Aux Loss λ (변조유형)</label>
+              <input type="number" id="aux_lambda" name="aux_lambda" value="0.2" step="0.05" min="0" max="1">
+            </div>
+            <div class="form-group">
+              <label for="batch_size">Batch Size</label>
+              <input type="number" id="batch_size" name="batch_size" value="8" min="1" max="64">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="train_samples">Train Samples</label>
+              <input type="number" id="train_samples" name="train_samples" value="60" min="10" max="500">
+            </div>
+            <div class="form-group">
+              <label for="test_samples">Test Samples</label>
+              <input type="number" id="test_samples" name="test_samples" value="20" min="5" max="200">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="num_emitters">방사원 수</label>
+              <input type="number" id="num_emitters" name="num_emitters" value="3" min="2" max="10">
+            </div>
+            <div class="form-group">
+              <label for="lr">Learning Rate</label>
+              <input type="number" id="lr" name="lr" value="0.0001" step="0.00001">
+            </div>
+          </div>
+
+          <p class="hint">학습 데이터는 <code>DATA/job_{id}/</code> 에 자동 저장됩니다 (PDW, IQ, iq_inst, iq_tf, spectrum, mod_labels).</p>
+          <button type="submit" class="btn btn-primary btn-block" id="submit-btn">학습 시작</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>학습 진행</h2>
+        <div id="progress-area" class="progress-area" hidden>
+          <p>Job ID: <strong id="job-id">-</strong></p>
+          <p>DATA: <code id="data-path">-</code></p>
+          <div class="progress-bar-wrap">
+            <div class="progress-bar" id="progress-bar"></div>
+          </div>
+          <p id="progress-text">대기 중...</p>
+          <div id="epoch-log" class="epoch-log"></div>
+          <a id="result-link" href="#" class="btn btn-secondary" hidden>결과 보기</a>
+        </div>
+        <div id="progress-placeholder" class="placeholder">
+          학습을 시작하면 진행 상황과 DATA 저장 경로가 표시됩니다.
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="/static/js/train.js"></script>
+</body>
+</html>

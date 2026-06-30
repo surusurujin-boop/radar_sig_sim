@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>결과 - Radar Pulse Clustering</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-brand">Radar Pulse Clustering</div>
+    <div class="nav-links">
+      <a href="/">대시보드</a>
+      <a href="/train">학습</a>
+    </div>
+  </nav>
+
+  <main class="container">
+    <header class="page-header">
+      <h1>학습 결과 <span id="job-title"></span></h1>
+      <p id="job-meta"></p>
+    </header>
+
+    <div id="loading" class="loading">결과 불러오는 중...</div>
+
+    <div id="results-content" hidden>
+      <div class="grid-2">
+        <div class="card">
+          <h2>Loss / ARI 추이</h2>
+          <canvas id="chart-loss"></canvas>
+        </div>
+        <div class="card">
+          <h2>평가 지표</h2>
+          <table class="data-table" id="eval-table">
+            <thead>
+              <tr>
+                <th>Configuration</th>
+                <th>ARI</th>
+                <th>NMI</th>
+                <th>Purity</th>
+                <th>F1</th>
+                <th>|dK|</th>
+              </tr>
+            </thead>
+            <tbody id="eval-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Ablation 비교 (ARI)</h2>
+        <canvas id="chart-ablation" height="120"></canvas>
+      </div>
+
+      <div class="card">
+        <h2>샘플 펄스별 Emitter 클러스터 식별</h2>
+        <p class="hint">True EM = 실제 방사원 ID, Pred CL = HDBSCAN 예측 클러스터 ID</p>
+        <table class="data-table" id="pred-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>True EM</th>
+              <th>Pred CL</th>
+              <th>CF</th>
+              <th>PW</th>
+              <th>PA</th>
+              <th>DOA</th>
+              <th>TOA</th>
+              <th>일치</th>
+            </tr>
+          </thead>
+          <tbody id="pred-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const JOB_ID = {{ job_id }};
+  </script>
+  <script src="/static/js/results.js"></script>
+</body>
+</html>
