@@ -1,3 +1,5 @@
+# 로컬 전용 — Vercel 배포 시 제외 (.vercelignore)
+requirements.txt
 .venv/
 venv/
 __pycache__/
@@ -15,3 +17,8 @@ train.py
 evaluate.py
 infer.py
 export_data.py
+src/models/
+src/baselines/
+src/clustering/
+src/losses/
+src/services/training_service.py

@@ -1,19 +1,13 @@
 {
-  "version": 2,
-  "installCommand": "pip install -r requirements-vercel.txt",
-  "builds": [
-    {
-      "src": "api/index.py",
-      "use": "@vercel/python"
+  "installCommand": "pip install -r api/requirements.txt",
+  "functions": {
+    "api/index.py": {
+      "maxDuration": 10,
+      "excludeFiles": "{requirements.txt,checkpoints/**,data/radar.db,**/*.npz,**/*.pt,**/__pycache__/**,src/models/**,src/baselines/**,src/clustering/**,src/losses/**,src/services/training_service.py,ablation_study.py,train.py,evaluate.py,infer.py,export_data.py,results/**}"
     }
-  ],
+  },
   "routes": [
-    {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "api/index.py"
-    }
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "api/index.py" }
   ]
 }

@@ -69,6 +69,11 @@ python app.py
 
 ## 트러블슈팅
 
+- **`Total bundle size exceeds 500 MB`**
+  - 원인: 루트 `requirements.txt`에 **PyTorch(~2–4GB)** 가 있어 Vercel이 함께 설치함
+  - 해결: `api/requirements.txt`(경량)만 사용, 루트 `requirements.txt`는 `.vercelignore`로 제외
+  - 로컬 학습: `pip install -r requirements.txt` (Vercel과 별도)
+
 - **404 on /explorer**: 서버 재배포 후 캐시 삭제
 - **학습 버튼 비활성**: 정상 (Demo 모드)
 - **데이터 탐색 default 데이터셋**: npz 미배포 → **Live** 모드 사용
