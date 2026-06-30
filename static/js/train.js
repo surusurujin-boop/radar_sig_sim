@@ -13,6 +13,23 @@ const phaseDetail = document.getElementById("phase-detail");
 
 let pollTimer = null;
 let trainingPhases = [];
+let trainingEnabled = true;
+
+async function loadRuntime() {
+  try {
+    const res = await fetch("/api/runtime");
+    const info = await res.json();
+    trainingEnabled = info.training_enabled;
+    if (!trainingEnabled) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = "학습 불가 (Demo 모드)";
+      const notice = document.getElementById("train-disabled-notice");
+      if (notice) notice.hidden = false;
+    }
+  } catch (_) {
+    /* ignore */
+  }
+}
 
 async function loadPhases() {
   const res = await fetch("/api/training-phases");
@@ -69,6 +86,9 @@ form.addEventListener("submit", async (e) => {
       body: JSON.stringify(data),
     });
     const result = await res.json();
+    if (!res.ok) {
+      throw new Error(result.message || result.error || "학습 시작 실패");
+    }
     progressPlaceholder.hidden = true;
     progressArea.hidden = false;
     jobIdEl.textContent = result.job_id;
@@ -78,8 +98,8 @@ form.addEventListener("submit", async (e) => {
     pollJob(result.job_id);
   } catch (err) {
     alert("학습 시작 실패: " + err.message);
-    submitBtn.disabled = false;
-    submitBtn.textContent = "학습 시작";
+    submitBtn.disabled = !trainingEnabled;
+    submitBtn.textContent = trainingEnabled ? "학습 시작" : "학습 불가 (Demo 모드)";
   }
 });
 
@@ -130,3 +150,4 @@ async function pollJob(jobId) {
 }
 
 loadPhases();
+loadRuntime();

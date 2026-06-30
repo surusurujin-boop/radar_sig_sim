@@ -13,6 +13,8 @@
     {% include 'partials/nav_links.html' %}
   </nav>
 
+  {% include 'partials/vercel_banner.html' %}
+
   <main class="container">
     <header class="page-header">
       <h1>모델 학습</h1>
@@ -96,6 +98,9 @@
           </div>
 
           <p class="hint">학습 데이터는 <code>DATA/job_{id}/</code> 에 자동 저장됩니다 (PDW, IQ, iq_inst, iq_tf, spectrum, mod_labels).</p>
+          <p id="train-disabled-notice" class="hint vercel-notice" hidden>
+            Vercel Demo 배포에서는 PyTorch 학습이 비활성화됩니다. 로컬에서 <code>python app.py</code> 로 실행하세요.
+          </p>
           <button type="submit" class="btn btn-primary btn-block" id="submit-btn">학습 시작</button>
         </form>
       </div>

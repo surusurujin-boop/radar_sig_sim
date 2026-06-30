@@ -17,8 +17,9 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import DeclarativeBase, Session, relationship, sessionmaker
 
-DB_PATH = "data/radar.db"
-DATABASE_URL = f"sqlite:///data/radar.db"
+from src.runtime import get_database_url, get_db_path, is_vercel
+
+DATABASE_URL = get_database_url()
 
 
 class Base(DeclarativeBase):
@@ -119,9 +120,8 @@ SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 
 
 def init_db() -> None:
-    from pathlib import Path
-
-    Path("data").mkdir(exist_ok=True)
+    db_path = get_db_path()
+    db_path.parent.mkdir(parents=True, exist_ok=True)
     Base.metadata.create_all(bind=engine)
 
 

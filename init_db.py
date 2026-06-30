@@ -8,6 +8,7 @@ from pathlib import Path
 
 from src.data.scenarios import ALL_SCENARIOS
 from src.db.models import ScenarioMeta, SessionLocal, init_db
+from src.runtime import get_db_path, is_vercel
 
 
 def seed_scenarios() -> None:
@@ -52,7 +53,7 @@ def _migrate_db() -> None:
     """기존 DB에 신규 컬럼 추가."""
     import sqlite3
 
-    db_path = Path("data/radar.db")
+    db_path = get_db_path()
     if not db_path.exists():
         return
     conn = sqlite3.connect(db_path)

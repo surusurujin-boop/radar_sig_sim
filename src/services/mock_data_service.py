@@ -7,21 +7,21 @@ from pathlib import Path
 
 import numpy as np
 
-from src.data.export import DATA_ROOT, load_sample
+from src.data.export import load_sample
 from src.data.modulation_features import MODULATION_TYPES
+from src.data.pulse_generator import SyntheticRadarPulseGenerator, normalize_pdw
 from src.data.scenarios import SimulationScenario
-from src.data.synthetic import ScenarioDataset
+from src.runtime import get_data_root, get_project_root
 
 PDW_LABELS = ["CF (norm)", "PW (log µs)", "PA", "DOA (norm)", "TOA (norm)"]
 
 
 def _data_roots() -> list[Path]:
     roots = []
-    for name in ("DATA", "data"):
-        p = Path(name)
-        if p.is_dir():
+    for p in (get_data_root(), get_project_root() / "DATA"):
+        if p.is_dir() and p not in roots:
             roots.append(p)
-    return roots or [DATA_ROOT]
+    return roots or [get_data_root()]
 
 
 def list_datasets() -> list[dict]:
@@ -102,8 +102,19 @@ def generate_live_sample(seed: int = 42, num_emitters: int = 3) -> dict[str, np.
         num_samples=1,
         seed=seed,
     )
-    ds = ScenarioDataset(scenario)
-    return ds.samples[0]
+    gen = SyntheticRadarPulseGenerator(
+        snr_db=scenario.snr_db,
+        pri_modulation=scenario.pri_modulation,
+        seed=seed,
+    )
+    sample = gen.generate_interleaved_sequence(
+        num_emitters=num_emitters,
+        pulses_per_emitter=scenario.pulses_per_emitter,
+        drop_rate=scenario.drop_rate,
+        noise_pulse_rate=scenario.noise_pulse_rate,
+    )
+    sample["pdw"] = normalize_pdw(sample["pdw"])
+    return sample
 
 
 def get_pulse_detail(

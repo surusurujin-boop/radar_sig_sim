@@ -23,9 +23,22 @@ from src.services.mock_data_service import (
     list_samples,
 )
 from src.services.training_phases import TRAINING_PHASES
-from src.services.training_service import create_and_start_job
+from src.runtime import is_vercel, runtime_info, training_enabled
 
 app = Flask(__name__)
+
+
+@app.context_processor
+def inject_runtime():
+    return {
+        "is_vercel": is_vercel(),
+        "training_enabled": training_enabled(),
+    }
+
+
+@app.route("/api/runtime")
+def api_runtime():
+    return jsonify(runtime_info())
 
 
 @app.before_request
@@ -108,6 +121,19 @@ def api_list_jobs():
 
 @app.route("/api/jobs", methods=["POST"])
 def api_create_job():
+    if not training_enabled():
+        return jsonify(
+            {
+                "error": "training_disabled",
+                "message": (
+                    "Vercel 서버리스 환경에서는 PyTorch 학습 Job을 실행할 수 없습니다. "
+                    "로컬에서 python app.py 로 실행하세요."
+                ),
+            }
+        ), 503
+
+    from src.services.training_service import create_and_start_job
+
     data = request.get_json() or {}
     job_id = create_and_start_job(
         name=data.get("name", "Training Run"),

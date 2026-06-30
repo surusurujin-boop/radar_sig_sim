@@ -441,8 +441,15 @@ code {
   font-weight: 400;
 }
 
-.spectrum-canvas {
-  image-rendering: pixelated;
-  max-height: 320px;
-  width: 100%;
+.vercel-banner {
+  background: #1e3a5f;
+  border-bottom: 1px solid #2563eb;
+  color: #93c5fd;
+  padding: 0.65rem 2rem;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.vercel-banner code {
+  background: rgba(0, 0, 0, 0.25);
 }
