@@ -1,0 +1,385 @@
+================================================================================
+  Radar Pulse Clustering — 개발 모듈 설명서
+  (멀티모달 Transformer 기반 레이다 펄스 클러스터링)
+================================================================================
+  작성 목적 : 본 프로그램의 개발 과정·구조·실험 조건·결과를 발표/보고용으로 정리
+  프로젝트 경로 : c:\LIG_AGENT\Radar
+  원격 저장소 : https://github.com/surusurujin-boop/radar_sig_sim.git
+================================================================================
+
+
+■ 1. 프로젝트 개요
+--------------------------------------------------------------------------------
+
+  [연구 목표]
+  레이더 수신 환경에서 여러 방사원(emitter)의 펄스가 시간순으로 섞여 들어올 때,
+  각 펄스가 어느 방사원에 속하는지 자동으로 묶는 "펄스 클러스터링"을 수행한다.
+
+  [핵심 아이디어]
+  - PDW(운용 파라미터), IQ(파형), Spectrum(주파수 특성) 세 가지 정보를 함께 사용
+  - Multimodal Transformer로 펄스별 임베딩(embedding)을 학습
+  - 학습된 임베딩에 HDBSCAN 밀도 기반 클러스터링을 적용하여 방사원별 군집 형성
+  - 군집 수(K)를 사전에 알 필요 없음 (HDBSCAN 특성)
+
+  [한 줄 요약]
+  "합성 레이더 펄스 데이터 → 멀티모달 Transformer 임베딩 학습 → HDBSCAN 클러스터링"
+
+
+■ 2. 개발 과정 (단계별)
+--------------------------------------------------------------------------------
+
+  [1단계] 문제 정의 및 설계
+  - 레이더 PDW / IQ / 스펙트럼 멀티모달 입력 설계
+  - Transformer self-attention 기반 펄스 시퀀스 모델링
+  - Contrastive Learning + HDBSCAN 추론 파이프라인 설계
+
+  [2단계] 합성 데이터 생성기 구현 (src/data/)
+  - 다중 방사원 펄스열 시뮬레이터 (synthetic.py)
+  - PRI 변조(stable/jitter/stagger/sliding/group), SNR, 펄스 누락, 잡음 펄스 시나리오
+  - 변조 유형: CW, LFM, NLFM, FSK, PSK
+  - IQ 순시 특징(위상/순시주파수/진폭) 및 STFT 시간-주파수 특징 추출
+
+  [3단계] 모델 구현 (src/models/)
+  - PDW MLP Encoder, IQ 3-Branch CNN Encoder, Spectrum 2D-CNN Encoder
+  - Fusion Option B(pulse-level) / Option A(token-level)
+  - TOA Temporal Positional Embedding
+  - Pre-LN Transformer Encoder + L2 정규화 임베딩 출력
+
+  [4단계] 학습·평가 파이프라인 (train.py, evaluate.py, ablation_study.py)
+  - Supervised Contrastive Loss 학습
+  - 변조 유형 보조 손실(Aux Loss) — 웹 학습 v2
+  - HDBSCAN 클러스터링 및 ARI/NMI/Purity/F1 평가
+  - Baseline 비교: DTOA-PRI, PDW-HDBSCAN, PDW-KMeans
+
+  [5단계] Ablation 실험
+  - PDW only / PDW+IQ / PDW+IQ+Spectrum 모달리티 조합 정량 비교
+  - 결과 저장: results/ablation.json
+
+  [6단계] 웹 애플리케이션 (Flask)
+  - 대시보드, 설계, 학습, 결과, 데이터 탐색 페이지
+  - SQLite DB로 학습 Job·평가 결과·펄스 예측 저장
+  - DATA 폴더에 train/test npz 자동 저장
+  - 학습 단계별 진행 표시 (8단계 파이프라인)
+
+  [7단계] 데이터 탐색기 (/explorer)
+  - 저장된 모의 데이터 또는 실시간 생성 데이터의 PDW/IQ/스펙트럼 시각화
+
+
+■ 3. 프로그램 구조
+--------------------------------------------------------------------------------
+
+  Radar/
+  ├── app.py                    Flask 웹 서버 (메인 실행 진입점)
+  ├── train.py                  CLI 학습 스크립트
+  ├── evaluate.py               Baseline·제안 방법 평가
+  ├── ablation_study.py         모달리티 Ablation 실험
+  ├── export_data.py            DATA 폴더 데이터 export
+  ├── init_db.py                SQLite DB 초기화
+  ├── configs/default.yaml      기본 하이퍼파라미터
+  ├── DATA/ (또는 data/)        학습 데이터 npz + manifest.json
+  ├── checkpoints/              학습된 모델 가중치
+  ├── results/                  ablation.json, evaluation.json
+  ├── src/
+  │   ├── data/                 시뮬레이터, 시나리오, export
+  │   ├── models/               인코더, Multimodal Transformer
+  │   ├── losses/               Contrastive, Combined(Aux) Loss
+  │   ├── clustering/           HDBSCAN
+  │   ├── evaluation/           ARI, NMI, Purity 등 지표
+  │   ├── baselines/            DTOA-PRI, PDW-HDBSCAN, PDW-KMeans
+  │   ├── services/             웹 학습 Job, 모의 데이터 API
+  │   └── db/                   SQLAlchemy 모델
+  ├── templates/                HTML 페이지
+  └── static/                   CSS, JavaScript
+
+
+■ 4. 입력 데이터 — 무엇을 모델에 넣는가?
+--------------------------------------------------------------------------------
+
+  하나의 "샘플(sample)" = 여러 방사원 펄스가 TOA(도달 시각) 순으로 섞인 1개 시퀀스
+  하나의 "펄스(pulse)" = 시퀀스 안의 개별 레이더 펄스 1개
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │  모달리티 1 : PDW (Pulse Descriptor Word) — 5차원                        │
+  ├─────────────────────────────────────────────────────────────────────────┤
+  │  CF   : Carrier Frequency (반송 주파수)                                   │
+  │  PW   : Pulse Width (펄스 폭)                                            │
+  │  PA   : Pulse Amplitude (펄스 진폭)                                       │
+  │  DOA  : Direction of Arrival (도래각)                                    │
+  │  TOA  : Time of Arrival (도달 시각, 시퀀스 내 순서 정보)                   │
+  │                                                                         │
+  │  정규화 (normalize_pdw):                                                  │
+  │    CF  → (CF - 10GHz) / 2GHz                                             │
+  │    PW  → log10(PW_µs)                                                    │
+  │    PA  → 그대로                                                           │
+  │    DOA → DOA / 90                                                        │
+  │    TOA → 시퀀스 내 min-max (0~1)                                          │
+  │                                                                         │
+  │  텐서 형태: (N_pulses, 5)                                                │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │  모달리티 2 : IQ — Raw 파형 + 파생 특징                                   │
+  ├─────────────────────────────────────────────────────────────────────────┤
+  │  Raw IQ     : (2, 256) — I/Q 두 채널, 펄스당 256 샘플                      │
+  │  iq_inst    : (3, 256) — 순시 위상 φ(t), 순시 주파수 IF(t), 진폭 A(t)     │
+  │  iq_tf      : (1, 64, 64) — STFT 기반 시간-주파수 표현                    │
+  │                                                                         │
+  │  IQ 생성: CW/LFM/NLFM/FSK/PSK 변조별 위상 모델 + SNR 15dB AWGN            │
+  │  텐서 형태: iq (N, 2, 256), iq_inst (N, 3, 256), iq_tf (N, 1, 64, 64)   │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │  모달리티 3 : Spectrum — 2D 스펙트로그램                                  │
+  ├─────────────────────────────────────────────────────────────────────────┤
+  │  IQ 1차원 → 2D FFT magnitude → 64×64 리사이즈, max 정규화                │
+  │  텐서 형태: (N, 1, 64, 64)                                               │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+  [정답 레이블]
+  - labels     : 방사원 ID (0, 1, 2, ...) — 클러스터링 정답
+  - mod_labels : 변조 유형 ID (0=CW, 1=LFM, 2=NLFM, 3=FSK, 4=PSK) — 보조 학습용
+
+
+■ 5. 학습 데이터 — 어떻게 만들었는가?
+--------------------------------------------------------------------------------
+
+  [데이터 생성 방식]
+  실제 레이더 원시 데이터 대신, 물리 파라미터 기반 "합성(synthetic)" 데이터를 생성.
+  SimulationScenario 설정 → ScenarioDataset → npz 파일로 DATA 폴더 저장.
+
+  [주 실험 시나리오: S0 Baseline]
+  ┌──────────────────────┬──────────────────────────────────────────────┐
+  │ 항목                  │ 값                                           │
+  ├──────────────────────┼──────────────────────────────────────────────┤
+  │ 시나리오 ID           │ S0                                           │
+  │ 설명                  │ 안정 PRI, SNR 15 dB, 펄스 누락·잡음 없음       │
+  │ 방사원 수             │ 3                                            │
+  │ 방사원당 펄스 수       │ 30                                           │
+  │ 시퀀스당 총 펄스 수    │ 약 90 (3 × 30, drop_rate=0)                  │
+  │ PRI 변조              │ stable (평균 PRI의 ±10% 미세 변동)            │
+  │ SNR                   │ 15 dB                                        │
+  │ 펄스 누락률           │ 0%                                           │
+  │ 잡음 펄스 비율        │ 0%                                           │
+  │ Train 시퀀스 수       │ 80 (random seed = 42)                        │
+  │ Test 시퀀스 수        │ 30 (random seed = 999)                       │
+  │ Train 총 펄스(약)     │ 80 × 90 = 7,200                              │
+  │ Test 총 펄스(약)      │ 30 × 90 = 2,700                              │
+  └──────────────────────┴──────────────────────────────────────────────┘
+
+  [방사원별 랜덤 프로파일 (seed 고정 시 재현 가능)]
+  - CF  : 8 ~ 12 GHz
+  - PW  : 1 ~ 50 µs
+  - PA  : 0.3 ~ 1.0
+  - DOA : -60° ~ +60°
+  - PRI : 100 ~ 2000 µs
+  - 변조: 방사원 0→CW, 1→LFM, 2→NLFM, 3→FSK, 4→PSK (3개일 때 순환 할당)
+
+  [저장 위치 및 형식]
+  - DATA/default/          : export_data.py로 생성한 기본 데이터셋
+  - DATA/ablation/         : ablation_study.py 실험 데이터
+  - DATA/job_{id}/         : 웹 학습 Job마다 자동 생성
+  - 파일: sample_0000.npz ~ sample_XXXX.npz
+  - manifest.json: 시나리오 파라미터, 샘플 수, PDW 컬럼 설명 포함
+
+  [추가 시나리오 (강건성 평가용, evaluate.py)]
+  S1(PRI Jitter), S4b(펄스 누락 20%), S5b(SNR 10dB), S6a(잡음 펄스) 등 14종 정의
+
+
+■ 6. 모델 구조 — 어떤 모델을 사용했는가?
+--------------------------------------------------------------------------------
+
+  [모델명] MultimodalPulseClusteringModel (멀티모달 Transformer 펄스 클러스터링)
+
+  [전체 흐름]
+
+    PDW (5) ──→ PDW Encoder (3-layer MLP) ──────────────┐
+    IQ raw + inst + STFT ──→ IQ 3-Branch CNN ───────────┼──→ Fusion
+    Spectrum (64×64) ──→ Spectrum 2D-CNN ───────────────┘
+                              + TOA Temporal Embedding
+                              ↓
+                    Transformer Encoder (Self-Attention)
+                              ↓
+                    Embedding Projection + L2 Normalize
+                              ↓
+                    HDBSCAN → 클러스터 ID
+
+  [인코더 상세]
+
+  (1) PDW Encoder
+      - 입력: (B, N, 5)
+      - 구조: Linear → LayerNorm → GELU → Dropout × 2층 + Linear
+      - 출력: (B, N, 256) — "운용·시간 배열" 보조 문맥
+
+  (2) IQ 3-Branch Encoder
+      - Branch 1: Raw IQ 1D-CNN (2→32→64→128 채널)
+      - Branch 2: 순시 특징(φ, IF, A) 1D-CNN (3→32→64)
+      - Branch 3: STFT 2D-CNN (1→32→64)
+      - 3 branch concat → fusion → (B, N, 256)
+      - Aux Head: 변조 5-class 분류 (CW/LFM/NLFM/FSK/PSK)
+
+  (3) Spectrum Encoder
+      - 2D-CNN (1→32→64) + AdaptiveAvgPool
+      - 출력: (B, N, 256)
+
+  [Fusion 방식]
+  - Option B (pulse, 기본): 펄스별 모달리티 concat → Linear → N개 토큰
+  - Option A (token): 3N개 토큰 self-attention (ablation용)
+
+  [Transformer]
+  - Pre-LN Transformer Encoder
+  - layers=4, heads=8, embed_dim=256, ff_dim=512, dropout=0.1
+  - Multi-Head Self-Attention: 펄스 간 시간·문맥 관계 학습
+  - TOA Embedding: 연속값 sinusoidal positional encoding
+
+  [모달리티 Ablation 설정]
+  - pdw      : PDW Encoder만 사용
+  - pdw_iq   : PDW + IQ Encoder
+  - full     : PDW + IQ + Spectrum (전체)
+
+
+■ 7. 학습 및 추론 — 어떤 조건으로 실험했는가?
+--------------------------------------------------------------------------------
+
+  [Ablation 실험 조건] (results/ablation.json — 주요 정량 결과)
+
+  ┌──────────────────────┬──────────────────────────────────────────────┐
+  │ 항목                  │ 값                                           │
+  ├──────────────────────┼──────────────────────────────────────────────┤
+  │ 데이터                │ S0 Baseline, train 80 / test 30 시퀀스        │
+  │ 방사원 수             │ 3                                            │
+  │ Epoch                 │ 15                                           │
+  │ Batch size            │ 8                                            │
+  │ Optimizer             │ AdamW (lr=1e-4, weight_decay=1e-4)           │
+  │ 손실 함수             │ Supervised Contrastive Loss (τ=0.07)          │
+  │ 임베딩 차원           │ 128                                          │
+  │ 클러스터링            │ HDBSCAN (min_cluster_size=5)                 │
+  │ 평가 지표             │ ARI, NMI, Purity, Pairwise-F1, |dK|, Noise%  │
+  └──────────────────────┴──────────────────────────────────────────────┘
+
+  [웹 학습 v2 추가 설정] (training_service.py, configs/default.yaml)
+  - Combined Loss = Contrastive (τ=0.1) + λ·Modulation Aux CE (λ=0.2)
+  - embed_dim=256, fusion_mode=pulse (Option B)
+  - 학습 Job마다 train/test samples, epochs 등 UI에서 설정 가능
+
+  [학습 목표]
+  - Contrastive: 같은 방사원(labels) 펄스의 임베딩은 가깝게, 다른 방사원은 멀게
+  - Aux Loss: IQ 변조 특성(CW/LFM/NLFM/FSK/PSK) 보조 분류로 표현력 강화
+
+  [추론 절차]
+  1. 학습된 모델로 test 펄스 시퀀스의 펄스별 D차원 임베딩 추출
+  2. L2 정규화
+  3. HDBSCAN으로 밀도 기반 클러스터링 (군집 수 자동 결정)
+  4. 클러스터 ID ↔ 실제 방사원 ID 비교 → ARI/NMI 등 계산
+
+
+■ 8. 실험 결과
+--------------------------------------------------------------------------------
+
+  [8-1] 모달리티 Ablation (동일 S0 데이터, 15 epoch)
+
+  ┌─────────────────────────┬────────┬────────┬─────────┬──────────┐
+  │ Configuration           │  ARI   │  NMI   │ Purity  │ Pair F1  │
+  ├─────────────────────────┼────────┼────────┼─────────┼──────────┤
+  │ PDW only                │ 0.148  │ 0.182  │  0.500  │  0.432   │
+  │ PDW + IQ                │ 0.415  │ 0.417  │  0.724  │  (참조)  │
+  │ PDW + IQ + Spectrum     │ 0.506  │ 0.469  │  0.800  │  (참조)  │
+  └─────────────────────────┴────────┴────────┴─────────┴──────────┘
+
+  [해석]
+  - PDW만 사용하면 ARI 0.15 수준 → 운용 파라미터만으로는 변조·스펙트럼 구분 한계
+  - IQ 추가 시 ARI 0.42 → 파형·변조 특성이 핵심 discriminative 정보
+  - Spectrum 추가 시 ARI 0.51 → 주파수 대역 정보로 추가 성능 향상
+  → 멀티모달(Full) 접근의 유효성 확인
+
+  [8-2] Baseline 비교 (evaluate.py, S0 시나리오)
+
+  ┌─────────────────────────┬────────┬────────┬─────────┐
+  │ Method                  │  ARI   │  NMI   │ Purity  │
+  ├─────────────────────────┼────────┼────────┼─────────┤
+  │ DTOA-PRI                │ 0.014  │ 0.018  │  0.406  │
+  │ PDW-HDBSCAN             │ 0.251  │ 0.304  │  0.587  │
+  │ PDW-KMeans (oracle K)   │ 0.053  │ 0.049  │  0.453  │
+  │ Proposed (Ours)*        │ 0.149  │ 0.184  │  0.513  │
+  └─────────────────────────┴────────┴────────┴─────────┘
+  * evaluate.py quick 프로토콜 기준 (Ablation full 0.506과 학습 조건 상이)
+
+  [8-3] 클러스터 수 예측]
+  - Ablation Full: 예측 3 clusters = 실제 3 emitters (cluster_count_error=0)
+  - HDBSCAN noise ratio: 0% (S0 baseline)
+
+
+■ 9. 웹 애플리케이션 기능
+--------------------------------------------------------------------------------
+
+  [실행 방법]
+    cd c:\LIG_AGENT\Radar
+    python app.py
+    → http://127.0.0.1:5000
+
+  [페이지]
+  ┌──────────────┬────────────────────────────────────────────────────────┐
+  │ URL          │ 기능                                                   │
+  ├──────────────┼────────────────────────────────────────────────────────┤
+  │ /            │ 학습 Job 대시보드, 이력 조회                            │
+  │ /explorer    │ 모의 데이터 PDW/IQ/스펙트럼 탐색·시각화                 │
+  │ /design      │ Transformer 아키텍처·알고리즘 설명                      │
+  │ /train       │ 학습 설정·시작, 8단계 파이프라인 진행 표시              │
+  │ /results/{id}│ Loss/ARI 차트, Ablation, 펄스별 예측 테이블             │
+  └──────────────┴────────────────────────────────────────────────────────┘
+
+  [학습 Job 파이프라인 (8단계)]
+  1. 대기열 등록 → 2. 합성 데이터 생성 → 3. DATA 저장
+  → 4. 모델 초기화 → 5. Epoch 학습 → 6. HDBSCAN 검증
+  → 7. 체크포인트 저장 → 8. 완료
+
+  [DB] SQLite (data/radar.db)
+  - TrainingJob, EpochLog, EvaluationResult, PulsePrediction, ScenarioMeta
+
+
+■ 10. CLI 실행 방법 (웹 외)
+--------------------------------------------------------------------------------
+
+  [데이터 export]
+    python export_data.py --train-samples 80 --test-samples 30
+
+  [Ablation 실험]
+    python ablation_study.py --train-samples 80 --test-samples 30 --epochs 15
+
+  [Baseline 평가]
+    python evaluate.py
+
+  [CLI 학습]
+    python train.py --epochs 30 --num-samples 200
+
+
+■ 11. 발표 시 필수 설명 체크리스트
+--------------------------------------------------------------------------------
+
+  □ 연구 문제 : 다중 방사원 레이더 펄스를 방사원별로 자동 분류(클러스터링)
+  □ 입력 데이터 : PDW(5) + IQ(256) + Spectrum(64×64) 멀티모달
+  □ 학습 데이터 : S0 합성 시나리오, 3 emitters, train 80 / test 30 시퀀스
+  □ 모델 구조   : 3-Branch Encoder + Fusion + Transformer + HDBSCAN
+  □ 학습 방법   : Supervised Contrastive (+ Aux Loss in v2)
+  □ 실험 조건   : SNR 15dB, stable PRI, 15 epoch, AdamW
+  □ 핵심 결과   : Full ARI 0.506 > PDW only 0.148 (Ablation)
+  □ 시스템      : Flask 웹 + DATA 저장 + 데이터 탐색기
+
+
+■ 12. 핵심 파일 참조
+--------------------------------------------------------------------------------
+
+  시뮬레이터     : src/data/synthetic.py
+  시나리오 정의  : src/data/scenarios.py
+  PDW 정규화     : normalize_pdw() in synthetic.py
+  IQ 특징 추출   : src/data/modulation_features.py
+  모델           : src/models/multimodal_transformer.py, encoders.py
+  Ablation 결과  : results/ablation.json
+  Baseline 결과  : results/evaluation.json
+  데이터 manifest: DATA/default/manifest.json
+  웹 서버        : app.py
+  설명서(본 파일): des_module.txt
+
+
+================================================================================
+  END OF DOCUMENT
+================================================================================

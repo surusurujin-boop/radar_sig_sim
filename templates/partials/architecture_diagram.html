@@ -1,0 +1,69 @@
+<svg class="arch-svg" viewBox="0 0 920 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Multimodal Transformer Architecture">
+  <defs>
+    <linearGradient id="encGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e3a5f"/>
+      <stop offset="100%" style="stop-color:#243044"/>
+    </linearGradient>
+    <linearGradient id="txGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#2563eb"/>
+      <stop offset="100%" style="stop-color:#7c3aed"/>
+    </linearGradient>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#60a5fa"/>
+    </marker>
+  </defs>
+
+  <text x="460" y="28" text-anchor="middle" fill="#e7ecf3" font-size="16" font-weight="600">멀티모달 Transformer 펄스 클러스터링</text>
+
+  <!-- Encoders -->
+  <rect x="30" y="55" width="150" height="70" rx="8" fill="url(#encGrad)" stroke="#3b82f6"/>
+  <text x="105" y="82" text-anchor="middle" fill="#93c5fd" font-size="12" font-weight="600">PDW Encoder</text>
+  <text x="105" y="100" text-anchor="middle" fill="#8b9cb3" font-size="10">MLP · CF,PW,PA,DOA,TOA</text>
+
+  <rect x="30" y="145" width="150" height="70" rx="8" fill="url(#encGrad)" stroke="#3b82f6"/>
+  <text x="105" y="172" text-anchor="middle" fill="#93c5fd" font-size="12" font-weight="600">IQ 3-Branch</text>
+  <text x="105" y="190" text-anchor="middle" fill="#8b9cb3" font-size="10">Raw + φ/IF/A + STFT</text>
+
+  <rect x="30" y="235" width="150" height="70" rx="8" fill="url(#encGrad)" stroke="#3b82f6"/>
+  <text x="105" y="262" text-anchor="middle" fill="#93c5fd" font-size="12" font-weight="600">Spectrum CNN</text>
+  <text x="105" y="280" text-anchor="middle" fill="#8b9cb3" font-size="10">2D 스펙트로그램</text>
+
+  <!-- Fusion -->
+  <rect x="240" y="130" width="140" height="100" rx="8" fill="#243044" stroke="#f59e0b"/>
+  <text x="310" y="165" text-anchor="middle" fill="#fcd34d" font-size="12" font-weight="600">Fusion</text>
+  <text x="310" y="185" text-anchor="middle" fill="#8b9cb3" font-size="10">Option B: N tokens</text>
+  <text x="310" y="200" text-anchor="middle" fill="#8b9cb3" font-size="10">+ TOA Embedding</text>
+
+  <!-- Transformer -->
+  <rect x="430" y="90" width="200" height="180" rx="10" fill="url(#txGrad)" stroke="#a78bfa" stroke-width="2"/>
+  <text x="530" y="120" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">Transformer Encoder</text>
+  <text x="530" y="145" text-anchor="middle" fill="#e0e7ff" font-size="10">Pre-LN · 4 layers · 8 heads</text>
+  <rect x="455" y="160" width="150" height="36" rx="6" fill="rgba(255,255,255,0.15)"/>
+  <text x="530" y="182" text-anchor="middle" fill="#fff" font-size="11">Multi-Head Self-Attention</text>
+  <rect x="455" y="210" width="150" height="36" rx="6" fill="rgba(255,255,255,0.15)"/>
+  <text x="530" y="232" text-anchor="middle" fill="#fff" font-size="11">Feed-Forward (FFN)</text>
+
+  <!-- Output -->
+  <rect x="690" y="115" width="130" height="60" rx="8" fill="#14532d" stroke="#22c55e"/>
+  <text x="755" y="142" text-anchor="middle" fill="#86efac" font-size="12" font-weight="600">Embedding</text>
+  <text x="755" y="160" text-anchor="middle" fill="#8b9cb3" font-size="10">L2 Normalize · D=256</text>
+
+  <rect x="690" y="195" width="130" height="60" rx="8" fill="#14532d" stroke="#22c55e"/>
+  <text x="755" y="222" text-anchor="middle" fill="#86efac" font-size="12" font-weight="600">HDBSCAN</text>
+  <text x="755" y="240" text-anchor="middle" fill="#8b9cb3" font-size="10">밀도 기반 클러스터링</text>
+
+  <!-- Training box -->
+  <rect x="430" y="310" width="390" height="85" rx="8" fill="#1a2332" stroke="#2d3a4f"/>
+  <text x="450" y="335" fill="#e7ecf3" font-size="11" font-weight="600">학습 알고리즘</text>
+  <text x="450" y="355" fill="#8b9cb3" font-size="10">• Supervised Contrastive Loss (τ=0.1) — 동일 방사원 펄스 임베딩 근접</text>
+  <text x="450" y="372" fill="#8b9cb3" font-size="10">• Modulation Aux Loss (λ=0.2) — CW/LFM/NLFM/FSK/PSK 보조 분류</text>
+  <text x="450" y="389" fill="#8b9cb3" font-size="10">• Optimizer: AdamW (lr=1e-4) · Inference: HDBSCAN → ARI/NMI/Purity</text>
+
+  <!-- Arrows -->
+  <line x1="180" y1="90" x2="235" y2="155" stroke="#60a5fa" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="180" y1="180" x2="235" y2="180" stroke="#60a5fa" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="180" y1="270" x2="235" y2="205" stroke="#60a5fa" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="380" y1="180" x2="425" y2="180" stroke="#60a5fa" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="630" y1="160" x2="685" y2="145" stroke="#60a5fa" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="630" y1="200" x2="685" y2="225" stroke="#60a5fa" stroke-width="2" marker-end="url(#arrow)"/>
+</svg>

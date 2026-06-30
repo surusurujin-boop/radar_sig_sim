@@ -18,6 +18,7 @@ from src.db.models import EpochLog, EvaluationResult, PulsePrediction, SessionLo
 from src.evaluation.metrics import compute_clustering_metrics
 from src.losses.combined import CombinedClusteringLoss
 from src.models.multimodal_transformer import FusionMode, ModalitySet, MultimodalPulseClusteringModel
+from src.services.training_phases import TRAINING_PHASES
 
 MODALITY_LABELS: dict[ModalitySet, str] = {
     "pdw": "PDW only",
@@ -27,6 +28,24 @@ MODALITY_LABELS: dict[ModalitySet, str] = {
 
 _job_lock = threading.Lock()
 _running_jobs: set[int] = set()
+
+
+def _set_phase(job_id: int, phase_id: str, message: str | None = None) -> None:
+    desc = message
+    if desc is None:
+        for p in TRAINING_PHASES:
+            if p["id"] == phase_id:
+                desc = p["desc"]
+                break
+    sess = SessionLocal()
+    try:
+        job = sess.get(TrainingJob, job_id)
+        if job:
+            job.current_phase = phase_id
+            job.phase_message = desc
+            sess.commit()
+    finally:
+        sess.close()
 
 
 def _get_device() -> torch.device:
@@ -96,10 +115,17 @@ def _train_single_modality(job_id, modality_set, job, device, session_factory, t
         fusion_mode=fusion_mode,
     ).to(device)
 
+    _set_phase(job_id, "model_init", f"{MODALITY_LABELS[modality_set]} Multimodal Transformer 가중치 초기화")
+
     criterion = CombinedClusteringLoss(temperature=0.1, aux_lambda=aux_lambda)
     optimizer = torch.optim.AdamW(model.parameters(), lr=job.lr, weight_decay=1e-4)
 
     for epoch in range(1, job.epochs + 1):
+        _set_phase(
+            job_id,
+            "train_epoch",
+            f"Epoch {epoch}/{job.epochs} — {MODALITY_LABELS[modality_set]} Contrastive + Aux 학습",
+        )
         model.train()
         total_loss, steps = 0.0, 0
         for batch in loader:
@@ -129,6 +155,7 @@ def _train_single_modality(job_id, modality_set, job, device, session_factory, t
             steps += 1
 
         avg_loss = total_loss / max(steps, 1)
+        _set_phase(job_id, "eval", f"Epoch {epoch} — HDBSCAN 클러스터링 및 ARI/NMI 계산")
         metrics, _, _, _ = _evaluate_model(model, test_scenario, device)
 
         sess = session_factory()
@@ -149,6 +176,7 @@ def _train_single_modality(job_id, modality_set, job, device, session_factory, t
         finally:
             sess.close()
 
+    _set_phase(job_id, "checkpoint", f"{MODALITY_LABELS[modality_set]} 체크포인트 저장")
     ckpt_dir = Path("checkpoints/web") / str(job_id)
     ckpt_dir.mkdir(parents=True, exist_ok=True)
     ckpt_path = ckpt_dir / f"model_{modality_set}.pt"
@@ -184,9 +212,12 @@ def _run_job(job_id: int) -> None:
             return
 
         job.status = "running"
+        job.current_phase = "queued"
+        job.phase_message = "학습 파이프라인 시작"
         session.commit()
         device = _get_device()
 
+        _set_phase(job_id, "data_gen", f"합성 데이터 생성 (train {job.train_samples}, test {job.test_samples})")
         train_scenario = SimulationScenario(
             scenario_id="train",
             name="Train",
@@ -203,6 +234,7 @@ def _run_job(job_id: int) -> None:
             num_samples=job.test_samples,
             seed=999,
         )
+        _set_phase(job_id, "data_save", f"DATA/job_{job_id}/ 에 npz·manifest 저장")
         save_train_test_pair(
             train_scenario,
             test_scenario,
@@ -272,6 +304,8 @@ def _run_job(job_id: int) -> None:
             db_job = sess.get(TrainingJob, job_id)
             if db_job:
                 db_job.status = "completed"
+                db_job.current_phase = "done"
+                db_job.phase_message = "학습·평가·저장 완료"
                 db_job.checkpoint_path = primary_ckpt
                 db_job.completed_at = datetime.now(timezone.utc)
                 db_job.current_epoch = db_job.epochs
@@ -285,6 +319,8 @@ def _run_job(job_id: int) -> None:
             db_job = sess.get(TrainingJob, job_id)
             if db_job:
                 db_job.status = "failed"
+                db_job.current_phase = "failed"
+                db_job.phase_message = str(e)
                 db_job.error_message = str(e)
                 db_job.completed_at = datetime.now(timezone.utc)
                 sess.commit()

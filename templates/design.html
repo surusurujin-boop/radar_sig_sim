@@ -9,11 +9,8 @@
 <body>
   <nav class="navbar">
     <div class="nav-brand">Radar Pulse Clustering</div>
-    <div class="nav-links">
-      <a href="/">대시보드</a>
-      <a href="/design" class="active">설계</a>
-      <a href="/train">학습</a>
-    </div>
+    {% set active = 'design' %}
+    {% include 'partials/nav_links.html' %}
   </nav>
 
   <main class="container">
@@ -23,17 +20,15 @@
     </header>
 
     <div class="card">
-      <h2>아키텍처 개요</h2>
-      <pre class="arch-diagram">PDW (CF,PW,PA,DOA,TOA) ──▶ PDW Encoder (MLP) ──────────────┐
-IQ raw + IF/φ/A + STFT ──▶ IQ 3-Branch Encoder ─────────────┼──▶ Fusion (Option B/A)
-Spectrum ─────────────────▶ Spectrum Encoder (2D-CNN) ────────┘
-                              + TOA Temporal Embedding
-                              ▼
-                    Transformer Encoder (Self-Attention)
-                              ▼
-                    Embedding Projection (L2 norm)
-                              ▼
-              학습: Contrastive + 변조유형 Aux Loss  |  추론: HDBSCAN</pre>
+      <h2>아키텍처 다이어그램</h2>
+      {% include 'partials/architecture_diagram.html' %}
+    </div>
+
+    <div class="card">
+      <h2>적용 알고리즘</h2>
+      <div id="algo-grid" class="algo-grid">
+        <p class="placeholder">불러오는 중...</p>
+      </div>
     </div>
 
     <div class="grid-2">
@@ -47,24 +42,42 @@ Spectrum ─────────────────▶ Spectrum Encoder
         </ul>
       </div>
       <div class="card">
-        <h2>Fusion 옵션</h2>
+        <h2>Fusion · Transformer</h2>
         <ul class="feature-list">
           <li><strong>Option B (pulse)</strong> — 펄스별 모달리티 concat → N 토큰 (기본)</li>
           <li><strong>Option A (token)</strong> — 3N 토큰 self-attention (ablation)</li>
           <li><strong>TOA Embedding</strong> — 연속값 temporal positional encoding</li>
+          <li><strong>Self-Attention</strong> — Pre-LN Transformer, 4 layers × 8 heads</li>
         </ul>
       </div>
     </div>
 
-    <div class="card">
-      <h2>변조·PRI 시뮬레이션</h2>
-      <div class="scenario-grid">
-        <div class="scenario-item"><strong>변조</strong><span>CW, LFM, NLFM, FSK, PSK</span></div>
-        <div class="scenario-item"><strong>PRI</strong><span>Stable, Jitter, Stagger, Sliding, Group</span></div>
-        <div class="scenario-item"><strong>강건성</strong><span>펄스 누락 0~30%, 잡음 0~20%, SNR 5~15dB</span></div>
-        <div class="scenario-item"><strong>DATA 저장</strong><span>PDW, IQ, iq_inst, iq_tf, spectrum, mod_labels</span></div>
-      </div>
+    <div class="card card-highlight">
+      <p>모의 데이터를 PDW/IQ/스펙트럼 단위로 직접 확인하려면 데이터 탐색 페이지를 이용하세요.</p>
+      <a href="/explorer" class="btn btn-primary">데이터 탐색 →</a>
     </div>
   </main>
+
+  <script>
+    fetch("/api/model-info")
+      .then((r) => r.json())
+      .then((info) => {
+        const grid = document.getElementById("algo-grid");
+        const sections = [
+          { title: "인코더", items: info.encoders.map((e) => ({ name: e.name, desc: `${e.type} — ${e.role}` })) },
+          { title: "학습", items: info.training.map((t) => ({ name: t.name, desc: t.desc })) },
+          { title: "추론", items: info.inference.map((t) => ({ name: t.name, desc: t.desc })) },
+        ];
+        grid.innerHTML = sections
+          .map(
+            (s) => `
+          <div class="algo-section">
+            <h3>${s.title}</h3>
+            ${s.items.map((i) => `<div class="algo-item"><strong>${i.name}</strong><span>${i.desc}</span></div>`).join("")}
+          </div>`
+          )
+          .join("");
+      });
+  </script>
 </body>
 </html>

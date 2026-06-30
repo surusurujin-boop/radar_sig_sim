@@ -9,11 +9,8 @@
 <body>
   <nav class="navbar">
     <div class="nav-brand">Radar Pulse Clustering</div>
-    <div class="nav-links">
-      <a href="/">대시보드</a>
-      <a href="/design">설계</a>
-      <a href="/train" class="active">학습</a>
-    </div>
+    {% set active = 'train' %}
+    {% include 'partials/nav_links.html' %}
   </nav>
 
   <main class="container">
@@ -21,6 +18,11 @@
       <h1>모델 학습</h1>
       <p>설계서 v2 — IQ 3-Branch, Option B Fusion, Contrastive + Aux Loss</p>
     </header>
+
+    <div class="card">
+      <h2>모델 구조</h2>
+      {% include 'partials/architecture_diagram.html' %}
+    </div>
 
     <div class="grid-2">
       <div class="card">
@@ -103,6 +105,11 @@
         <div id="progress-area" class="progress-area" hidden>
           <p>Job ID: <strong id="job-id">-</strong></p>
           <p>DATA: <code id="data-path">-</code></p>
+
+          <h3 class="section-subtitle">파이프라인 단계</h3>
+          <div id="phase-pipeline" class="phase-pipeline"></div>
+          <p id="phase-detail" class="phase-detail"></p>
+
           <div class="progress-bar-wrap">
             <div class="progress-bar" id="progress-bar"></div>
           </div>
@@ -111,7 +118,8 @@
           <a id="result-link" href="#" class="btn btn-secondary" hidden>결과 보기</a>
         </div>
         <div id="progress-placeholder" class="placeholder">
-          학습을 시작하면 진행 상황과 DATA 저장 경로가 표시됩니다.
+          <strong>학습 시작</strong> 버튼을 누르면 아래 단계가 순서대로 진행됩니다:<br>
+          데이터 생성 → DATA 저장 → 모델 초기화 → Epoch 학습 → HDBSCAN 검증 → 체크포인트 저장
         </div>
       </div>
     </div>

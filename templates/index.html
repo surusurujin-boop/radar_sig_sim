@@ -9,11 +9,8 @@
 <body>
   <nav class="navbar">
     <div class="nav-brand">Radar Pulse Clustering</div>
-    <div class="nav-links">
-      <a href="/" class="active">대시보드</a>
-      <a href="/design">설계</a>
-      <a href="/train">학습</a>
-    </div>
+    {% set active = 'index' %}
+    {% include 'partials/nav_links.html' %}
   </nav>
 
   <main class="container">
@@ -25,6 +22,7 @@
     <div class="card card-highlight">
       <p>설계서 v2 반영: IQ 순시특징+STFT 3-branch, TOA temporal embedding, 변조유형 보조손실, DATA 폴더 자동 저장</p>
       <a href="/design" class="btn btn-secondary">아키텍처 상세 보기</a>
+      <a href="/explorer" class="btn btn-primary">모의 데이터 탐색</a>
     </div>
 
     <div class="card">

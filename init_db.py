@@ -63,6 +63,10 @@ def _migrate_db() -> None:
         cur.execute("ALTER TABLE training_jobs ADD COLUMN fusion_mode VARCHAR(16) DEFAULT 'pulse'")
     if "aux_lambda" not in cols:
         cur.execute("ALTER TABLE training_jobs ADD COLUMN aux_lambda FLOAT DEFAULT 0.2")
+    if "current_phase" not in cols:
+        cur.execute("ALTER TABLE training_jobs ADD COLUMN current_phase VARCHAR(32) DEFAULT 'queued'")
+    if "phase_message" not in cols:
+        cur.execute("ALTER TABLE training_jobs ADD COLUMN phase_message TEXT")
     conn.commit()
     conn.close()
 

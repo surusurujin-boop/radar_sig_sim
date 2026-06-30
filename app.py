@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from flask import Flask, jsonify, render_template, request
 
-from init_db import seed_scenarios
+from init_db import _migrate_db, seed_scenarios
 from src.db.models import (
     EvaluationResult,
     EpochLog,
@@ -15,6 +15,14 @@ from src.db.models import (
     init_db,
     job_to_dict,
 )
+from src.services.model_info import MODEL_INFO
+from src.services.mock_data_service import (
+    get_pulse_detail,
+    get_sequence_summary,
+    list_datasets,
+    list_samples,
+)
+from src.services.training_phases import TRAINING_PHASES
 from src.services.training_service import create_and_start_job
 
 app = Flask(__name__)
@@ -24,6 +32,7 @@ app = Flask(__name__)
 def ensure_db():
     if not hasattr(app, "_db_ready"):
         init_db()
+        _migrate_db()
         seed_scenarios()
         app._db_ready = True
 
@@ -31,6 +40,11 @@ def ensure_db():
 @app.route("/")
 def index():
     return render_template("index.html")
+
+
+@app.route("/explorer")
+def explorer_page():
+    return render_template("explorer.html")
 
 
 @app.route("/design")
@@ -120,6 +134,7 @@ def api_job_detail(job_id: int):
             return jsonify({"error": "Not found"}), 404
 
         d = job_to_dict(job)
+        d["training_phases"] = TRAINING_PHASES
         d["epoch_logs"] = [
             {"epoch": e.epoch, "loss": e.loss, "ari": e.ari, "nmi": e.nmi}
             for e in session.query(EpochLog)
@@ -178,7 +193,63 @@ def api_predictions(job_id: int):
         session.close()
 
 
+@app.route("/api/training-phases")
+def api_training_phases():
+    return jsonify(TRAINING_PHASES)
+
+
+@app.route("/api/model-info")
+def api_model_info():
+    return jsonify(MODEL_INFO)
+
+
+@app.route("/api/mock-data/datasets")
+def api_mock_datasets():
+    return jsonify(list_datasets())
+
+
+@app.route("/api/mock-data/samples")
+def api_mock_samples():
+    dataset_id = request.args.get("dataset_id", "default")
+    split = request.args.get("split", "train")
+    return jsonify(list_samples(dataset_id, split))
+
+
+@app.route("/api/mock-data/sequence")
+def api_mock_sequence():
+    dataset_id = request.args.get("dataset_id", "default")
+    split = request.args.get("split", "train")
+    sample_index = int(request.args.get("sample_index", 0))
+    live_seed = int(request.args.get("seed", 42))
+    live_emitters = int(request.args.get("emitters", 3))
+    try:
+        return jsonify(
+            get_sequence_summary(dataset_id, split, sample_index, live_seed, live_emitters)
+        )
+    except (FileNotFoundError, IndexError) as e:
+        return jsonify({"error": str(e)}), 404
+
+
+@app.route("/api/mock-data/pulse")
+def api_mock_pulse():
+    dataset_id = request.args.get("dataset_id", "default")
+    split = request.args.get("split", "train")
+    sample_index = int(request.args.get("sample_index", 0))
+    pulse_index = int(request.args.get("pulse_index", 0))
+    live_seed = int(request.args.get("seed", 42))
+    live_emitters = int(request.args.get("emitters", 3))
+    try:
+        return jsonify(
+            get_pulse_detail(
+                dataset_id, split, sample_index, pulse_index, live_seed, live_emitters
+            )
+        )
+    except (FileNotFoundError, IndexError) as e:
+        return jsonify({"error": str(e)}), 404
+
+
 if __name__ == "__main__":
     init_db()
+    _migrate_db()
     seed_scenarios()
     app.run(host="0.0.0.0", port=5000, debug=False, threaded=True)

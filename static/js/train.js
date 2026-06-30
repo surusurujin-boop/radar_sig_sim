@@ -7,8 +7,41 @@ const progressText = document.getElementById("progress-text");
 const jobIdEl = document.getElementById("job-id");
 const epochLog = document.getElementById("epoch-log");
 const dataPathEl = document.getElementById("data-path");
+const resultLink = document.getElementById("result-link");
+const phasePipeline = document.getElementById("phase-pipeline");
+const phaseDetail = document.getElementById("phase-detail");
 
 let pollTimer = null;
+let trainingPhases = [];
+
+async function loadPhases() {
+  const res = await fetch("/api/training-phases");
+  trainingPhases = await res.json();
+}
+
+function renderPhasePipeline(job) {
+  if (!phasePipeline || !trainingPhases.length) return;
+
+  const current = job.current_phase || "queued";
+  const currentIdx = trainingPhases.findIndex((p) => p.id === current);
+
+  phasePipeline.innerHTML = trainingPhases
+    .map((p, i) => {
+      let state = "pending";
+      if (job.status === "completed" || current === "done") state = "done";
+      else if (p.id === current) state = "active";
+      else if (currentIdx >= 0 && i < currentIdx) state = "done";
+      return `<div class="phase-step ${state}" data-phase="${p.id}">
+        <div class="phase-dot">${i + 1}</div>
+        <div class="phase-label">${p.label}</div>
+      </div>`;
+    })
+    .join("");
+
+  if (phaseDetail) {
+    phaseDetail.textContent = job.phase_message || "";
+  }
+}
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -41,6 +74,7 @@ form.addEventListener("submit", async (e) => {
     jobIdEl.textContent = result.job_id;
     if (dataPathEl) dataPathEl.textContent = `DATA/job_${result.job_id}/`;
     resultLink.href = `/results/${result.job_id}`;
+    resultLink.hidden = true;
     pollJob(result.job_id);
   } catch (err) {
     alert("학습 시작 실패: " + err.message);
@@ -56,9 +90,15 @@ async function pollJob(jobId) {
     const res = await fetch(`/api/jobs/${jobId}`);
     const job = await res.json();
 
+    if (job.training_phases) trainingPhases = job.training_phases;
+    renderPhasePipeline(job);
+
     const pct = job.epochs > 0 ? (job.current_epoch / job.epochs) * 100 : 0;
     progressBar.style.width = `${pct}%`;
-    progressText.textContent = `${job.status} — Epoch ${job.current_epoch}/${job.epochs}`;
+
+    const phaseLabel =
+      trainingPhases.find((p) => p.id === job.current_phase)?.label || job.current_phase;
+    progressText.textContent = `${job.status} — ${phaseLabel} (Epoch ${job.current_epoch}/${job.epochs})`;
 
     if (job.epoch_logs && job.epoch_logs.length) {
       epochLog.innerHTML = job.epoch_logs
@@ -72,6 +112,7 @@ async function pollJob(jobId) {
 
     if (job.status === "completed") {
       progressText.textContent = "학습 완료!";
+      renderPhasePipeline({ ...job, current_phase: "done", status: "completed" });
       resultLink.hidden = false;
       submitBtn.disabled = false;
       submitBtn.textContent = "학습 시작";
@@ -87,3 +128,5 @@ async function pollJob(jobId) {
   await update();
   pollTimer = setInterval(update, 2000);
 }
+
+loadPhases();

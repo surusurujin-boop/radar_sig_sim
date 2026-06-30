@@ -42,6 +42,8 @@ class TrainingJob(Base):
     fusion_mode = Column(String(16), default="pulse")
     aux_lambda = Column(Float, default=0.2)
     current_epoch = Column(Integer, default=0)
+    current_phase = Column(String(32), default="queued")
+    phase_message = Column(Text, nullable=True)
     checkpoint_path = Column(String(512), nullable=True)
     error_message = Column(Text, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
@@ -143,6 +145,8 @@ def job_to_dict(job: TrainingJob) -> dict:
         "fusion_mode": getattr(job, "fusion_mode", "pulse") or "pulse",
         "aux_lambda": getattr(job, "aux_lambda", 0.2) or 0.2,
         "current_epoch": job.current_epoch,
+        "current_phase": getattr(job, "current_phase", "queued") or "queued",
+        "phase_message": getattr(job, "phase_message", None),
         "checkpoint_path": job.checkpoint_path,
         "error_message": job.error_message,
         "created_at": job.created_at.isoformat() if job.created_at else None,

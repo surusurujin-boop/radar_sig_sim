@@ -10,10 +10,8 @@
 <body>
   <nav class="navbar">
     <div class="nav-brand">Radar Pulse Clustering</div>
-    <div class="nav-links">
-      <a href="/">대시보드</a>
-      <a href="/train">학습</a>
-    </div>
+    {% set active = '' %}
+    {% include 'partials/nav_links.html' %}
   </nav>
 
   <main class="container">
