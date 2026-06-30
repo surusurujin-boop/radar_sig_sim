@@ -362,6 +362,7 @@
   □ 학습 방법   : Supervised Contrastive (+ Aux Loss in v2)
   □ 실험 조건   : SNR 15dB, stable PRI, 15 epoch, AdamW
   □ 핵심 결과   : Full ARI 0.506 > PDW only 0.148 (Ablation)
+  □ 설계 철학   : PRI/DTOA 비사용, 펄스 내부 IQ·Spectrum 중심 (§13 참조)
   □ 시스템      : Flask 웹 + DATA 저장 + 데이터 탐색기
 
 
@@ -378,6 +379,139 @@
   데이터 manifest: DATA/default/manifest.json
   웹 서버        : app.py
   설명서(본 파일): des_module.txt
+
+
+■ 13. 설계 철학 — 코드에서의 반영
+     (PRI/DTOA 보조 vs 펄스 내부 변조·주파수 중심)
+--------------------------------------------------------------------------------
+
+  [연구 의도]
+  PRI 또는 DTOA 같은 시계열(펄스 간격) 정보를 "주된 판단 기준"으로 쓰지 않고,
+  "보조적 문맥"으로만 활용한다. 클러스터링의 핵심 판단은 단일 펄스 내부의
+  변조 특성(IQ)과 주파수 특성(Spectrum)에 둔다.
+
+  [한 줄 요약 (발표용)]
+  "전통 DTOA-PRI baseline과 달리, 제안 모델은 DTOA/PRI 패턴을 feature로
+   쓰지 않고, 펄스 내부 IQ·스펙트럼(변조·주파수)을 3-branch CNN으로 추출해
+   클러스터링하며, PDW와 TOA embedding은 운용·시간 순서 보조 문맥으로만
+   활용한다. Ablation에서 PDW only ARI 0.15 → PDW+IQ 0.42로 뒷받침된다."
+
+
+  ── 13-1. 핵심 판단 기준: 단일 펄스 내부 특징 (IQ + Spectrum) ──
+
+  (1) IQ 3-Branch Encoder — 펄스 1개(256 샘플) 내부만 분석
+      파일: src/models/encoders.py (IQEncoder)
+      - Raw branch   : I/Q 파형 (chirp, hop, phase jump)
+      - Inst branch  : 순시 위상 φ(t), 순시 주파수 IF(t), 진폭 A(t)
+                       → LFM / FSK / PSK 등 변조 구분
+      - TF branch    : STFT 시간-주파수 패턴
+      ※ 시퀀스(PRI/DTOA) 정보는 IQ encoder 입력에 포함되지 않음
+
+  (2) 데이터 생성 — 변조는 펄스 폭(PW) 구간 "내부"에서만 생성
+      파일: src/data/synthetic.py → _generate_iq()
+      - CW / LFM / NLFM / FSK / PSK 별 위상(phase) 모델
+      - t = linspace(0, PW, 256) → 펄스 하나의 시간축만 사용
+
+  (3) 순시·STFT 특징 추출 — 펄스 단위
+      파일: src/data/modulation_features.py
+      - compute_inst_features() : φ, IF, A (펄스당)
+      - compute_stft()          : STFT 히트맵 (펄스당)
+
+  (4) Spectrum Encoder — 펄스별 주파수 대역
+      파일: src/data/synthetic.py → _generate_spectrum()
+            src/models/encoders.py (SpectrumEncoder)
+      - IQ → 2D FFT magnitude → 64×64 스펙트로그램
+
+  (5) 변조 유형 Aux Loss — IQ 표현에 "펄스 내부 변조"를 명시적으로 학습
+      파일: src/losses/combined.py, IQEncoder.mod_aux_head
+      - Combined Loss = Contrastive + λ·CrossEntropy(변조 5-class)
+      - mod_aux_head는 IQ encoder에만 부착
+      - CW / LFM / NLFM / FSK / PSK 분류 보조
+
+
+  ── 13-2. 보조 문맥: PDW + TOA (PRI/DTOA와는 구분) ──
+
+  (1) PDW Encoder — 코드 주석·설계서상 "보조 문맥"
+      파일: src/models/encoders.py (PDWEncoder)
+      - docstring: "PDW(CF, PW, PA, DOA, TOA) MLP 인코더 — 보조 문맥"
+      - src/services/model_info.py:
+          PDW  → "운용·시간 배열 보조 문맥"
+          IQ   → "변조 특성 (핵심)"
+          Spec → "주파수 대역 특성 (핵심)"
+
+  (2) TOA Temporal Embedding — 시퀀스 위치 정보만 추가
+      파일: src/models/encoders.py (TOATemporalEmbedding)
+            src/models/multimodal_transformer.py (encode_tokens)
+      - 정규화된 TOA → sinusoidal positional encoding
+      - Fusion 후 토큰에 toa_emb를 "더함"(+) → 시간 순서 보조
+      - DTOA 통계(local mean/std, hop pattern)는 계산·입력하지 않음
+
+  (3) PRI의 역할 — 데이터 생성에만 사용, 모델 feature 아님
+      파일: src/data/synthetic.py → _next_pri()
+      - 방사원별 펄스 간 TOA 간격(시뮬레이션) 생성용
+      - 학습·추론 시 모델 입력 feature로 PRI/DTOA는 들어가지 않음
+
+  (4) 제안 모델 vs DTOA-PRI Baseline (의도적 대비)
+      ┌─────────────────────┬──────────────────────────────────────────┐
+      │ DTOAPriBaseline     │ TOA 정렬 → DTOA + local 통계 → HDBSCAN   │
+      │ (dtoa_pri.py)       │ 시계열(PRI/DTOA) 패턴을 "주 feature"     │
+      ├─────────────────────┼──────────────────────────────────────────┤
+      │ Proposed (Ours)     │ IQ 3-branch + Spectrum → Transformer     │
+      │                     │ DTOA/PRI feature 없음                    │
+      └─────────────────────┴──────────────────────────────────────────┘
+      PDW-HDBSCAN baseline(pdw_clustering.py)도 TOA/DTOA를 의도적으로 제외:
+      "PDW(CF, PW, PA, DOA) 특징 HDBSCAN — TOA/DTOA 미사용"
+
+
+  ── 13-3. Ablation — 설계 철학의 실험적 근거 ──
+
+  파일: src/models/multimodal_transformer.py (MODALITY_CONFIG)
+        results/ablation.json
+
+  ┌─────────────────────┬────────┬────────────────────────────────────┐
+  │ Configuration       │  ARI   │ 해석                               │
+  ├─────────────────────┼────────┼────────────────────────────────────┤
+  │ PDW only            │ 0.148  │ 운용 파라미터만으로는 한계           │
+  │ PDW + IQ            │ 0.415  │ 펄스 내부 변조(IQ) 추가 → 급상승   │
+  │ PDW + IQ + Spectrum │ 0.506  │ 주파수 정보 추가 → 추가 향상       │
+  └─────────────────────┴────────┴────────────────────────────────────┘
+
+  → PDW(운용·보조) 단독 vs IQ(펄스 내부) 추가의 성능 차이가
+    "핵심 판단은 펄스 내부 특성"이라는 설계 의도를 실험적으로 뒷받침.
+
+
+  ── 13-4. 코드 반영 지도 (요약) ──
+
+  [핵심 — 펄스 내부]
+    synthetic._generate_iq()       펄스 구간 내 변조 위상
+    modulation_features.py           φ/IF/A, STFT (펄스 단위)
+    IQEncoder 3-branch               Raw + 순시 + STFT
+    SpectrumEncoder                  펄스별 주파수 스펙트럼
+    CombinedLoss (mod aux, λ=0.2)    변조 유형을 IQ 표현에 강제
+
+  [보조 — 시계열/운용]
+    PDWEncoder (보조 문맥)            CF, PW, PA, DOA, TOA
+    TOATemporalEmbedding             TOA positional bias만
+    Transformer self-attention       펄스 간 관계 보조 학습 가능
+
+  [대비 — PRI/DTOA 중심 방법]
+    DTOAPriBaseline                  DTOA 통계 → HDBSCAN (주 feature)
+    Proposed                         DTOA/PRI feature 없음
+
+
+  ── 13-5. 한계 및 향후 보강 (솔직한 설명) ──
+
+  (1) 코드가 PDW encoder를 fusion에서 완전히 차단하지는 않음
+      → pdw_iq / full 모드에서 PDW도 IQ·Spectrum과 동등 fusion
+      → Ablation으로 "PDW 단독은 약하다"만 확인, "PDW 기여 상한"은 미검증
+
+  (2) Contrastive loss 정답은 방사원 ID (변조 ID 아님)
+      → 시뮬레이터에서 방사원마다 변조가 고정되어 간접 연결
+
+  (3) 향후 보강 실험 제안
+      - IQ+Spectrum only (PDW encoder off) ablation
+      - Proposed에 DTOA feature를 추가했을 때 성능 변화
+      → "보조 vs 주" 주장을 더 명확히 입증 가능
 
 
 ================================================================================
