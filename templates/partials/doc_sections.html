@@ -1,0 +1,187 @@
+<section id="sec1" class="doc-section card">
+  <h2>1. 프로젝트 개요</h2>
+  <h3>연구 목표</h3>
+  <p>레이더 수신 환경에서 여러 방사원(emitter)의 펄스가 시간순으로 섞여 들어올 때, 각 펄스가 어느 방사원에 속하는지 자동으로 묶는 <strong>펄스 클러스터링</strong>을 수행합니다.</p>
+  <h3>핵심 아이디어</h3>
+  <ul class="feature-list">
+    <li>PDW, IQ, Spectrum 세 가지 정보를 함께 사용</li>
+    <li>Multimodal Transformer로 펄스별 임베딩 학습</li>
+    <li>HDBSCAN 밀도 기반 클러스터링 (군집 수 K 사전 불필요)</li>
+  </ul>
+  <blockquote class="doc-quote">합성 레이더 펄스 데이터 → 멀티모달 Transformer 임베딩 학습 → HDBSCAN 클러스터링</blockquote>
+</section>
+
+<section id="sec2" class="doc-section card">
+  <h2>2. 개발 과정</h2>
+  <ol class="doc-steps">
+    <li><strong>문제 정의·설계</strong> — 멀티모달 입력, Transformer, Contrastive + HDBSCAN</li>
+    <li><strong>합성 데이터</strong> — PRI/변조/SNR 시뮬레이터, IQ 순시·STFT 특징</li>
+    <li><strong>모델 구현</strong> — 3-Branch Encoder, Fusion, TOA Embedding</li>
+    <li><strong>학습·평가</strong> — Contrastive, Aux Loss, Baseline 비교</li>
+    <li><strong>Ablation</strong> — PDW / PDW+IQ / Full 정량 비교</li>
+    <li><strong>Flask 웹</strong> — 대시보드, 학습, Explorer, DB</li>
+    <li><strong>데이터 탐색기</strong> — PDW/IQ/스펙트럼 시각화</li>
+  </ol>
+</section>
+
+<section id="sec3" class="doc-section card">
+  <h2>3. 프로그램 구조</h2>
+  <pre class="doc-tree">Radar/
+├── app.py                 Flask 웹 서버
+├── train.py / evaluate.py / ablation_study.py
+├── configs/default.yaml
+├── data/ / DATA/          npz + manifest
+├── src/data/              시뮬레이터
+├── src/models/            Transformer
+├── src/services/          웹 Job, Explorer API
+├── templates/             HTML
+└── static/                CSS, JS</pre>
+</section>
+
+<section id="sec4" class="doc-section card">
+  <h2>4. 입력 데이터</h2>
+  <div class="grid-2">
+    <div class="modality-box">
+      <h3>PDW (5차원)</h3>
+      <p>CF, PW, PA, DOA, TOA — 정규화 후 MLP 입력</p>
+      <p class="hint">역할: 운용·시간 배열 <strong>보조 문맥</strong></p>
+    </div>
+    <div class="modality-box">
+      <h3>IQ (256 샘플)</h3>
+      <p>Raw I/Q + 순시 φ/IF/A + STFT (64×64)</p>
+      <p class="hint">역할: 펄스 내부 <strong>변조 특성 (핵심)</strong></p>
+    </div>
+    <div class="modality-box">
+      <h3>Spectrum (64×64)</h3>
+      <p>2D FFT 스펙트로그램</p>
+      <p class="hint">역할: <strong>주파수 특성 (핵심)</strong></p>
+    </div>
+  </div>
+</section>
+
+<section id="sec5" class="doc-section card">
+  <h2>5. 학습 데이터 (S0 Baseline)</h2>
+  <table class="data-table doc-table">
+    <tr><th>항목</th><th>값</th></tr>
+    <tr><td>방사원 수</td><td>3</td></tr>
+    <tr><td>방사원당 펄스</td><td>30 (시퀀스당 ~90)</td></tr>
+    <tr><td>Train / Test 시퀀스</td><td>80 / 30</td></tr>
+    <tr><td>SNR</td><td>15 dB</td></tr>
+    <tr><td>PRI</td><td>stable</td></tr>
+    <tr><td>변조</td><td>CW, LFM, NLFM, FSK, PSK</td></tr>
+    <tr><td>Seed</td><td>train 42 / test 999</td></tr>
+  </table>
+</section>
+
+<section id="sec6" class="doc-section card">
+  <h2>6. 모델 구조</h2>
+  {% include 'partials/architecture_diagram.html' %}
+  <ul class="feature-list">
+    <li><strong>PDW Encoder</strong> — 3-layer MLP</li>
+    <li><strong>IQ 3-Branch</strong> — Raw + 순시 + STFT CNN</li>
+    <li><strong>Spectrum CNN</strong> — 2D CNN</li>
+    <li><strong>Transformer</strong> — Pre-LN, 4 layers, 8 heads, dim 256</li>
+    <li><strong>Fusion</strong> — Option B (pulse-level, 기본)</li>
+  </ul>
+</section>
+
+<section id="sec7" class="doc-section card">
+  <h2>7. 학습·추론 조건</h2>
+  <table class="data-table doc-table">
+    <tr><th>항목</th><th>Ablation 실험</th></tr>
+    <tr><td>Epoch</td><td>15</td></tr>
+    <tr><td>Batch</td><td>8</td></tr>
+    <tr><td>Optimizer</td><td>AdamW (lr=1e-4)</td></tr>
+    <tr><td>손실</td><td>Supervised Contrastive (τ=0.07)</td></tr>
+    <tr><td>웹 v2 추가</td><td>+ Modulation Aux Loss (λ=0.2)</td></tr>
+    <tr><td>추론</td><td>L2 norm embedding → HDBSCAN</td></tr>
+  </table>
+</section>
+
+<section id="sec8" class="doc-section card">
+  <h2>8. 실험 결과</h2>
+  <h3>모달리티 Ablation</h3>
+  <table class="data-table doc-table">
+    <thead><tr><th>Configuration</th><th>ARI</th><th>NMI</th><th>Purity</th></tr></thead>
+    <tbody>
+      <tr><td>PDW only</td><td>0.148</td><td>0.182</td><td>0.500</td></tr>
+      <tr><td>PDW + IQ</td><td>0.415</td><td>0.417</td><td>0.724</td></tr>
+      <tr><td>PDW + IQ + Spectrum</td><td><strong>0.506</strong></td><td>0.469</td><td>0.800</td></tr>
+    </tbody>
+  </table>
+  <h3>Baseline (S0)</h3>
+  <table class="data-table doc-table">
+    <thead><tr><th>Method</th><th>ARI</th><th>NMI</th></tr></thead>
+    <tbody>
+      <tr><td>DTOA-PRI</td><td>0.014</td><td>0.018</td></tr>
+      <tr><td>PDW-HDBSCAN</td><td>0.251</td><td>0.304</td></tr>
+      <tr><td>Proposed (quick eval)</td><td>0.149</td><td>0.184</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="sec9" class="doc-section card">
+  <h2>9. 웹 애플리케이션</h2>
+  <table class="data-table doc-table">
+    <tr><th>URL</th><th>기능</th></tr>
+    <tr><td><a href="/">/</a></td><td>학습 Job 대시보드</td></tr>
+    <tr><td><a href="/explorer">/explorer</a></td><td>PDW/IQ/스펙트럼 탐색</td></tr>
+    <tr><td><a href="/design">/design</a></td><td>아키텍처·알고리즘</td></tr>
+    <tr><td><a href="/train">/train</a></td><td>학습 (로컬 전용)</td></tr>
+    <tr><td><a href="/docs">/docs</a></td><td>본 설명서</td></tr>
+  </table>
+  <p class="hint">Vercel Demo: UI·Explorer(Live) 가능 / PyTorch 학습은 로컬 <code>python app.py</code></p>
+</section>
+
+<section id="sec10" class="doc-section card">
+  <h2>10. CLI</h2>
+  <pre class="doc-tree">python export_data.py --train-samples 80 --test-samples 30
+python ablation_study.py --epochs 15
+python evaluate.py
+python app.py</pre>
+</section>
+
+<section id="sec11" class="doc-section card">
+  <h2>11. 발표 체크리스트</h2>
+  <ul class="doc-checklist">
+    <li>연구 문제: 다중 방사원 펄스 클러스터링</li>
+    <li>입력: PDW(5) + IQ(256) + Spectrum(64×64)</li>
+    <li>학습 데이터: S0, 3 emitters, train 80 / test 30</li>
+    <li>모델: 3-Branch + Transformer + HDBSCAN</li>
+    <li>핵심 결과: Full ARI 0.506 &gt; PDW only 0.148</li>
+    <li>설계 철학: PRI/DTOA 비사용, 펄스 내부 IQ·Spectrum 중심</li>
+  </ul>
+</section>
+
+<section id="sec13" class="doc-section card">
+  <h2>13. 설계 철학</h2>
+  <p>PRI/DTOA 같은 시계열 정보는 <strong>보조 문맥</strong>으로만 사용하고, 단일 펄스 내부의 <strong>변조(IQ)·주파수(Spectrum)</strong> 특성으로 클러스터링합니다.</p>
+  <blockquote class="doc-quote">
+    DTOA-PRI baseline과 달리 제안 모델은 DTOA/PRI feature를 쓰지 않습니다.
+    PDW+IQ Ablation(0.15→0.42)이 이 설계를 뒷받침합니다.
+  </blockquote>
+  <div class="grid-2">
+    <div class="modality-box highlight-core">
+      <h3>핵심 (펄스 내부)</h3>
+      <ul>
+        <li>IQ 3-Branch CNN</li>
+        <li>Spectrum 2D-CNN</li>
+        <li>Modulation Aux Loss</li>
+      </ul>
+    </div>
+    <div class="modality-box highlight-aux">
+      <h3>보조 (시계열/운용)</h3>
+      <ul>
+        <li>PDW Encoder (CF,PW,PA,DOA,TOA)</li>
+        <li>TOA Temporal Embedding</li>
+        <li>Transformer self-attention</li>
+      </ul>
+    </div>
+  </div>
+  <h3>vs DTOA-PRI Baseline</h3>
+  <table class="data-table doc-table">
+    <tr><th>방법</th><th>특징</th></tr>
+    <tr><td>DTOA-PRI</td><td>DTOA 통계를 주 feature로 HDBSCAN</td></tr>
+    <tr><td>Proposed</td><td>IQ+Spectrum → Transformer, DTOA/PRI 없음</td></tr>
+  </table>
+</section>

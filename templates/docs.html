@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>개발 모듈 설명서 - Radar Pulse Clustering</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-brand">Radar Pulse Clustering</div>
+    {% set active = 'docs' %}
+    {% include 'partials/nav_links.html' %}
+  </nav>
+
+  {% include 'partials/vercel_banner.html' %}
+
+  <main class="container docs-page">
+    <header class="page-header">
+      <h1>개발 모듈 설명서</h1>
+      <p>멀티모달 Transformer 기반 레이다 펄스 클러스터링 — 발표·보고용 문서</p>
+      <p class="hint">
+        텍스트 버전: <a href="/des_module.html">des_module.html</a> ·
+        저장소: <a href="https://github.com/surusurujin-boop/radar_sig_sim" target="_blank" rel="noopener">GitHub</a>
+      </p>
+    </header>
+
+    <div class="docs-layout">
+      <aside class="docs-toc card">
+        <h2>목차</h2>
+        <nav class="toc-nav">
+          <a href="#sec1">1. 프로젝트 개요</a>
+          <a href="#sec2">2. 개발 과정</a>
+          <a href="#sec3">3. 프로그램 구조</a>
+          <a href="#sec4">4. 입력 데이터</a>
+          <a href="#sec5">5. 학습 데이터</a>
+          <a href="#sec6">6. 모델 구조</a>
+          <a href="#sec7">7. 학습·추론</a>
+          <a href="#sec8">8. 실험 결과</a>
+          <a href="#sec9">9. 웹 애플리케이션</a>
+          <a href="#sec10">10. CLI</a>
+          <a href="#sec11">11. 발표 체크리스트</a>
+          <a href="#sec13">13. 설계 철학</a>
+        </nav>
+      </aside>
+
+      <div class="docs-body">
+        {% include 'partials/doc_sections.html' %}
+      </div>
+    </div>
+  </main>
+</body>
+</html>

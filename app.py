@@ -60,6 +60,16 @@ def explorer_page():
     return render_template("explorer.html")
 
 
+@app.route("/docs")
+def docs_page():
+    return render_template("docs.html")
+
+
+@app.route("/des_module.html")
+def des_module_html():
+    return render_template("docs.html")
+
+
 @app.route("/design")
 def design_page():
     return render_template("design.html")
